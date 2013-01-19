@@ -16,3 +16,5 @@ profile
 *.moved-aside
 DerivedData
 .idea/
+com/co/
+com/cocos1.xcodeproj
