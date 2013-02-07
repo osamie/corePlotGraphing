@@ -29,6 +29,9 @@
 @synthesize lineBeingDragged;
 @synthesize mode;
 @synthesize lineEqu_label;
+@synthesize phase;
+@synthesize amplitude;
+@synthesize frequency;
 
 
 -(id)init{
@@ -43,21 +46,20 @@
 
 /*
  Generates data for plotting sin graph
- @param:
  */
--(void) generateSineDataSamples:(double)amplitude frequency:(double)freq phase:(double)phase
+-(void) generateSineDataSamples:(double)graphAmplitude frequency:(double)graphFrequency phase:(double)graphPhase
 {
-    
 	double length = (END_POINT - START_POINT);
     int numSamples = NUM_SAMPLES;
     
 	double delta = length / (numSamples - 1);
     
 	samples = [[NSMutableArray alloc] initWithCapacity:numSamples]; //initialize data array
+    markerSamples = [[NSMutableArray alloc] initWithCapacity:numSamples]; //initialize marker data array
+    
     for (int i = 0; i < numSamples; i++){
 		double x = START_POINT + (delta * i);
-		double y = amplitude * (sin((freq*x))+phase);
-        
+		double y = [self getSineFunction:x amplitude:graphAmplitude frequency:graphFrequency phase:graphPhase];
 		NSDictionary *sample = [NSDictionary dictionaryWithObjectsAndKeys:
 								[NSNumber numberWithDouble:x],X_VAL,
 								[NSNumber numberWithDouble:y],Y_VAL,
@@ -65,6 +67,40 @@
         
 		[samples addObject:sample];
 	}
+}
+
+/*
+   Generate data for plotting the straight line marker on the graph
+ */
+-(void) generateMarkerDataSamples:(double)graphAmplitude frequency:(double)graphFrequency phase:(double)graphPhase
+{
+    double length = (END_POINT - START_POINT);
+    int numSamples = NUM_SAMPLES;
+    
+	double delta = length / (numSamples - 1);
+    
+	markerSamples = [[NSMutableArray alloc] initWithCapacity:numSamples]; //initialize data array
+    for (int i = 0; i < numSamples; i++){
+		double x = 0;//START_POINT + (delta * i);
+		double y = START_POINT + (delta * i);
+        
+		NSDictionary *sample = [NSDictionary dictionaryWithObjectsAndKeys:
+								[NSNumber numberWithDouble:x],X_VAL,
+								[NSNumber numberWithDouble:y],Y_VAL,
+								nil];
+        
+		[markerSamples addObject:sample];
+	}
+    
+}
+
+/*
+ * Returns the y value of a given x on the SINE graph
+ */
+-(double)getSineFunction:(double)xVal amplitude:(double)sineAmplitude frequency:(double)sineFrequency phase:(double)sinePhase
+{
+    return 0;
+//    return sineAmplitude * (sin((sineFrequency*xVal))+sinePhase);
 }
 
 
@@ -183,12 +219,12 @@
 {
 	NSDictionary *sample = [samples objectAtIndex:index];
 	
-	if (fieldEnum == CPTScatterPlotFieldX)
-		return [sample valueForKey:X_VAL];
+	if (fieldEnum == CPTScatterPlotFieldX){
+        return [sample valueForKey:X_VAL];
+    }
 	else
 		return [sample valueForKey:Y_VAL];
 }
-
 
 
 - (void)viewDidLoad {
@@ -262,8 +298,9 @@
     axisSet.yAxis.minorGridLineStyle = minorAxisStyle;
     
     [self applyDefaultPlotColor:dataSourceLinePlot];
-	[graph addPlot:dataSourceLinePlot];
     
+    [dataSourceLinePlot setIdentifier:@"SinePlot"];
+	[graph addPlot:dataSourceLinePlot];
 }
 
 -(void) applyHighLightPlotColor:(CPTScatterPlot*) plot{
@@ -294,10 +331,4 @@
     NSLog(@"START! Amplitude:%f Phase:%f Frequency:%f",[self amplitude],[self phase],[self frequency]);
 }
 
-
 @end
-
-
-
-
-

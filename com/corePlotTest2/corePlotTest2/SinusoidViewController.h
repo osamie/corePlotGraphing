@@ -10,6 +10,7 @@
 
 @interface SinusoidViewController : UIViewController<CPTPlotDataSource,CPTPlotSpaceDelegate>{
     NSMutableArray *samples;
+    NSMutableArray *markerSamples;
     __weak IBOutlet UILabel *lineEqu_label;
     __weak IBOutlet UIImageView *locomotionPoints;
     BOOL lineBeingDragged;
@@ -26,6 +27,5 @@
 @property(atomic) double amplitude;
 @property(atomic) double phase;
 @property(atomic) double frequency;
-
 
 @end
