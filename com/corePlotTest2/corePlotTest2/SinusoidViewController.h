@@ -18,6 +18,7 @@
     double amplitude;
     double phase;
     double frequency;
+    double markerXVal;
 }
 @property (nonatomic, strong) CPTGraphHostingView *hostView;
 @property (weak, nonatomic) IBOutlet UISlider *slopeChanger;
@@ -27,5 +28,5 @@
 @property(atomic) double amplitude;
 @property(atomic) double phase;
 @property(atomic) double frequency;
-
+@property(atomic) double markerXVal;
 @end

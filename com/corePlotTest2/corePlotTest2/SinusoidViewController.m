@@ -12,6 +12,9 @@
 #define END_POINT 4.0
 #define NUM_SAMPLES 180
 
+#define MARKER_START -2.0
+#define MARKER_END  2.0
+
 #define X_VAL @"X_VAL"
 #define Y_VAL @"Y_VAL"
 
@@ -32,6 +35,7 @@
 @synthesize phase;
 @synthesize amplitude;
 @synthesize frequency;
+@synthesize markerXVal;
 
 
 -(id)init{
@@ -39,6 +43,7 @@
     if(self) {
         NSLog(@"_init: %@", [self class]);
         lineBeingDragged = NO;
+        markerXVal = 0.0;
     }
     return self;
 }
@@ -72,17 +77,19 @@
 /*
    Generate data for plotting the straight line marker on the graph
  */
--(void) generateMarkerDataSamples:(double)graphAmplitude frequency:(double)graphFrequency phase:(double)graphPhase
+-(void) generateMarkerDataSamples:(double)xVal
 {
-    double length = (END_POINT - START_POINT);
+    double endPoint = MARKER_END;
+    double startPoint = MARKER_START;
+    double length = endPoint-startPoint;//(END_POINT - START_POINT);
     int numSamples = NUM_SAMPLES;
     
 	double delta = length / (numSamples - 1);
     
 	markerSamples = [[NSMutableArray alloc] initWithCapacity:numSamples]; //initialize data array
     for (int i = 0; i < numSamples; i++){
-		double x = 0;//START_POINT + (delta * i);
-		double y = START_POINT + (delta * i);
+		double x = xVal;//START_POINT + (delta * i);
+		double y = startPoint + (delta * i);
         
 		NSDictionary *sample = [NSDictionary dictionaryWithObjectsAndKeys:
 								[NSNumber numberWithDouble:x],X_VAL,
@@ -99,26 +106,26 @@
  */
 -(double)getSineFunction:(double)xVal amplitude:(double)sineAmplitude frequency:(double)sineFrequency phase:(double)sinePhase
 {
-    return 0;
-//    return sineAmplitude * (sin((sineFrequency*xVal))+sinePhase);
+    return sineAmplitude * (sin((sineFrequency*xVal))+sinePhase);
 }
 
 
 - (BOOL)plotSpace:(CPTPlotSpace *)space shouldHandlePointingDeviceDownEvent:(id)event atPoint:(CGPoint)location{
     CGPoint newCoord = [self convertToGraphCoord:location];
     int yy = newCoord.y;
-    double xx = newCoord.x;
-    int eqVal = self.amplitude * (sin((self.frequency*xx)+self.phase));
-    int plotIndex = 0; //Only 1 plot on the graph
-    BOOL isInLine = (yy == eqVal);
+    CGRect range = CGRectMake(markerXVal-0.55, yy-0.55, 1.5, 1.5);
     
+    int plotIndex = 1; //Only 1 plot on the graph
+    BOOL isInLine = CGRectContainsPoint(range,newCoord);
+
     NSLog(@"CoordX:%f CoordY:%f isInLine? = %i\n",newCoord.x, newCoord.y, isInLine);
-    NSLog(@"Amplitude:%f Phase:%f Frequency:%f",[self amplitude],[self phase],[self frequency]);
-    
-    if((isInLine) && (newCoord.y > 0)){
+//    NSLog(@"Amplitude:%f Phase:%f Frequency:%f",[self amplitude],[self phase],[self frequency]);
+
+    if((isInLine) && (yy >= MARKER_START) && (yy <= MARKER_END)){
         //store the location of the touch at this point...used in determining mode
         lineBeingDragged=YES;
         [self applyHighLightPlotColor:(CPTScatterPlot *)[self.hostView.hostedGraph plotAtIndex:plotIndex]];
+        NSLog(@"X coord %f",markerXVal);
         return NO;
     }
     lineBeingDragged=NO;
@@ -132,10 +139,9 @@
         /*TODO: determine the mode(phase_shift,amplitude_shift or freq_shift) based on the direction of the drag motion.*/
         mode = AMPLITUDE_SHIFT; //hard-coded mode
         
-
-        [self moveGraph:newCoord curMode:[self mode]];
+        [self moveMarker:newCoord];
         lineBeingDragged = YES;
-        
+
         return NO;
     }
     lineBeingDragged = NO;
@@ -145,9 +151,13 @@
 
 - (BOOL)plotSpace:(CPTPlotSpace *)space shouldHandlePointingDeviceUpEvent:(id)event atPoint:(CGPoint)location
 {
-    int plotIndex = 0; //specify the index of the plot to be affected here 
+    int plotIndex = 1; //specify the index of the plot to be affected here
     lineBeingDragged = NO;
     [self applyDefaultPlotColor:(CPTScatterPlot *)[self.hostView.hostedGraph plotAtIndex:plotIndex]];
+    [self applyPlotColor:(CPTScatterPlot *)[self.hostView.hostedGraph plotAtIndex:plotIndex] color:[CPTColor magentaColor]];
+//    markerXVal = location.x;
+
+    
     return YES;
 }
 
@@ -187,6 +197,12 @@
     }
 }
 
+-(void) moveMarker:(CGPoint)location{
+    [self generateMarkerDataSamples:location.x];
+    [self.hostView.hostedGraph reloadData];
+    markerXVal = location.x;
+}
+
 
 -(void)updateGraph:(int)slope graphViewBounds:(CGRect)viewBounds lineMoverPoint:(CGPoint)moverPoint{
     CPTGraph *graph = self.hostView.hostedGraph;
@@ -217,13 +233,20 @@
 -(NSNumber *)numberForPlot:(CPTPlot *)plot field:(NSUInteger)fieldEnum
 			   recordIndex:(NSUInteger)index;
 {
-	NSDictionary *sample = [samples objectAtIndex:index];
+	NSDictionary *sample;
 	
+    if ( [plot.identifier isEqual:@"MarkerPlot"] ){
+       sample = [markerSamples objectAtIndex:index];
+    }else{
+        sample = [samples objectAtIndex:index];
+    }
+    
 	if (fieldEnum == CPTScatterPlotFieldX){
         return [sample valueForKey:X_VAL];
     }
-	else
-		return [sample valueForKey:Y_VAL];
+	else{
+        return [sample valueForKey:Y_VAL];
+    }
 }
 
 
@@ -249,21 +272,13 @@
 }
 
 -(void) configurePlots{
-    //    int slope = (int)slopeChanger.value;
     CPTGraphHostingView *hostingView = self.hostView;
-    
-    
-    //[self generateSineDataSamples:DEFAULT_AMPLITUDE frequency:DEFAULT_FREQUENCY phase:DEFAULT_PHASE];
-	
 	double yAxisStart = START_POINT;
 	double yAxisLength = END_POINT - START_POINT;
-	
 	double maxX = [[samples valueForKeyPath:@"@max.X_VAL"] doubleValue];
 	double xAxisStart = -maxX;
 	double xAxisLength = 2 * maxX;
 	
-    
-    
 	//Get graph and plot spaces and set axis
     CPTGraph *graph = self.hostView.hostedGraph;
     CPTXYPlotSpace *plotSpace = (CPTXYPlotSpace *) graph.defaultPlotSpace;
@@ -301,19 +316,35 @@
     
     [dataSourceLinePlot setIdentifier:@"SinePlot"];
 	[graph addPlot:dataSourceLinePlot];
+    
+    //------------------setup marker plot-------------------
+    CPTScatterPlot *markerLinePlot = [[CPTScatterPlot alloc] init];
+	markerLinePlot.dataSource = self;
+    
+    [self applyDefaultPlotColor:markerLinePlot];
+    
+    CPTMutableLineStyle *lineStyle = [CPTMutableLineStyle lineStyle];
+	lineStyle.lineWidth = 2.0;
+	lineStyle.lineColor = [CPTColor magentaColor];
+    markerLinePlot.dataLineStyle = lineStyle;
+
+    [markerLinePlot setIdentifier:@"MarkerPlot"];
+	[graph addPlot:markerLinePlot];
+    
 }
 
 -(void) applyHighLightPlotColor:(CPTScatterPlot*) plot{
-    CPTMutableLineStyle *hightlightLineStyle = [CPTMutableLineStyle lineStyle];
-	hightlightLineStyle.lineWidth = 3.0;
-	hightlightLineStyle.lineColor = [CPTColor lightGrayColor];
-    plot.dataLineStyle = hightlightLineStyle;
+    [self applyPlotColor:plot color:[CPTColor grayColor]];
 }
 
 -(void) applyDefaultPlotColor:(CPTScatterPlot*) plot{
+    [self applyPlotColor:plot color:[CPTColor orangeColor]];
+}
+
+-(void) applyPlotColor:(CPTScatterPlot*) plot color:(CPTColor *)color{
     CPTMutableLineStyle *hightlightLineStyle = [CPTMutableLineStyle lineStyle];
 	hightlightLineStyle.lineWidth = 3.0;
-	hightlightLineStyle.lineColor = [CPTColor orangeColor];
+	hightlightLineStyle.lineColor = color;
     plot.dataLineStyle = hightlightLineStyle;
 }
 
@@ -323,12 +354,10 @@
     self.amplitude = DEFAULT_AMPLITUDE;
     
     [self generateSineDataSamples:[self amplitude] frequency:[self frequency] phase:[self phase]];
+    [self generateMarkerDataSamples:markerXVal];
     [self configureHost:viewBounds];
-    
     [self configureGraph];
     [self configurePlots];
-    
-    NSLog(@"START! Amplitude:%f Phase:%f Frequency:%f",[self amplitude],[self phase],[self frequency]);
 }
 
 @end
