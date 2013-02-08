@@ -43,7 +43,7 @@
     if(self) {
         NSLog(@"_init: %@", [self class]);
         lineBeingDragged = NO;
-        markerXVal = 0.0;
+        markerXVal = 2.0;
     }
     return self;
 }
@@ -135,7 +135,7 @@
 - (BOOL)plotSpace:(CPTPlotSpace *)space shouldHandlePointingDeviceDraggedEvent:(id)event atPoint:(CGPoint)location{
     
     CGPoint newCoord = [self convertToGraphCoord:location];
-    if (lineBeingDragged && (newCoord.y > 0)) {
+    if (lineBeingDragged && (newCoord.y > MARKER_START)) {
         /*TODO: determine the mode(phase_shift,amplitude_shift or freq_shift) based on the direction of the drag motion.*/
         mode = AMPLITUDE_SHIFT; //hard-coded mode
         
@@ -155,6 +155,12 @@
     lineBeingDragged = NO;
     [self applyDefaultPlotColor:(CPTScatterPlot *)[self.hostView.hostedGraph plotAtIndex:plotIndex]];
     [self applyPlotColor:(CPTScatterPlot *)[self.hostView.hostedGraph plotAtIndex:plotIndex] color:[CPTColor magentaColor]];
+    
+    CPTScatterPlot * markerLinePlot =(CPTScatterPlot *) [self.hostView.hostedGraph plotAtIndex:plotIndex];
+    
+    markerLinePlot.areaFill = [CPTFill fillWithColor:[CPTColor grayColor]];
+    markerLinePlot.areaBaseValue = CPTDecimalFromInteger(0);
+    
 //    markerXVal = location.x;
 
     
@@ -201,6 +207,7 @@
     [self generateMarkerDataSamples:location.x];
     [self.hostView.hostedGraph reloadData];
     markerXVal = location.x;
+    
 }
 
 
@@ -329,6 +336,8 @@
     markerLinePlot.dataLineStyle = lineStyle;
 
     [markerLinePlot setIdentifier:@"MarkerPlot"];
+    
+    
 	[graph addPlot:markerLinePlot];
     
 }
@@ -346,6 +355,8 @@
 	hightlightLineStyle.lineWidth = 3.0;
 	hightlightLineStyle.lineColor = color;
     plot.dataLineStyle = hightlightLineStyle;
+    
+    
 }
 
 -(void)setupGraph:(CGPoint)point1 graphViewBounds:(CGRect)viewBounds{

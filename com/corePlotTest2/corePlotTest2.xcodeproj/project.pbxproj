@@ -28,6 +28,7 @@
 		C2C6CEB8162E2F2000C5C985 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = C2C6CEB7162E2F2000C5C985 /* QuartzCore.framework */; };
 		C2C6CEBE162E2F9200C5C985 /* CPDConstants.m in Sources */ = {isa = PBXBuildFile; fileRef = C2C6CEBB162E2F9200C5C985 /* CPDConstants.m */; };
 		C2C6CEBF162E2F9200C5C985 /* CPDStockPriceStore.m in Sources */ = {isa = PBXBuildFile; fileRef = C2C6CEBD162E2F9200C5C985 /* CPDStockPriceStore.m */; };
+		C2D9408116C4454C00025594 /* graphMarker.m in Sources */ = {isa = PBXBuildFile; fileRef = C2D9408016C4454C00025594 /* graphMarker.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -140,6 +141,8 @@
 		C2C6CEBB162E2F9200C5C985 /* CPDConstants.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPDConstants.m; sourceTree = "<group>"; };
 		C2C6CEBC162E2F9200C5C985 /* CPDStockPriceStore.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CPDStockPriceStore.h; sourceTree = "<group>"; };
 		C2C6CEBD162E2F9200C5C985 /* CPDStockPriceStore.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CPDStockPriceStore.m; sourceTree = "<group>"; };
+		C2D9407F16C4454C00025594 /* graphMarker.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = graphMarker.h; sourceTree = "<group>"; };
+		C2D9408016C4454C00025594 /* graphMarker.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = graphMarker.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -201,6 +204,8 @@
 				C2C6CE06162E2BD500C5C985 /* GraphingViewController.h */,
 				C2C6CE07162E2BD500C5C985 /* GraphingViewController.m */,
 				C218EEAD1640C5DE009BADF2 /* SinusoidViewController.h */,
+				C2D9407F16C4454C00025594 /* graphMarker.h */,
+				C2D9408016C4454C00025594 /* graphMarker.m */,
 				C218EEAE1640C5DE009BADF2 /* SinusoidViewController.m */,
 				C2C6CE09162E2BD500C5C985 /* second.png */,
 				C2C6CE0B162E2BD500C5C985 /* second@2x.png */,
@@ -406,6 +411,7 @@
 				C2C6CEBE162E2F9200C5C985 /* CPDConstants.m in Sources */,
 				C2C6CEBF162E2F9200C5C985 /* CPDStockPriceStore.m in Sources */,
 				C218EEAF1640C5DE009BADF2 /* SinusoidViewController.m in Sources */,
+				C2D9408116C4454C00025594 /* graphMarker.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
